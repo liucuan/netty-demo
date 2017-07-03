@@ -8,12 +8,14 @@ import org.objenesis.Objenesis;
 import org.objenesis.ObjenesisStd;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by jenny on 2017/3/9.
  */
 public class SerializationUtil {
-    private static ConcurrentHashMap<Class<?>, Schema<?>> cachedSchema = new ConcurrentHashMap<Class<?>, Schema<?>>();
+    private static ConcurrentHashMap<Class<?>, Schema<?>> cachedSchema = new ConcurrentHashMap<>();
 
     private static Objenesis objenesis = new ObjenesisStd(true);
 
@@ -61,10 +63,12 @@ public class SerializationUtil {
         try {
             T obj = objenesis.newInstance(clazz);
             Schema<T> schema = getSchema(clazz);
+            System.out.println(schema + " " + obj);
             ProtostuffIOUtil.mergeFrom(data, obj, schema);
             return obj;
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
+
 }
