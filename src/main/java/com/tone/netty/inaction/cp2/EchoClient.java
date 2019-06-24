@@ -7,6 +7,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
@@ -39,7 +41,15 @@ public class EchoClient {
                             ch.pipeline().addLast(new EchoClientHandler());
                         }
                     });
-            ChannelFuture f = b.connect().sync();//连到远端，一直等待直到连接完成
+            ChannelFuture f = b.connect().addListener(new GenericFutureListener<ChannelFuture>() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    if (!future.isSuccess()) {
+                        future.channel().close();
+                    }
+                    System.out.println("==--");
+                }
+            }).sync();//连到远端，一直等待直到连接完成
             f.channel().closeFuture().sync();//一直阻塞到Channel关闭
         } finally {
             group.shutdownGracefully().sync();
