@@ -46,6 +46,7 @@ public class NettyClient {
         @Override
         protected void initChannel(final SocketChannel ch) throws Exception {
             // -8表示lengthAdjustment，让解码器从0开始截取字节，并且包含消息头
+            long c = System.currentTimeMillis();
             ch.pipeline().addLast(new RpcEncoder(NettyMessage.class)).addLast(new RpcDecoder(NettyMessage.class))
                     .addLast(new IdleStateHandler(120, 10, 0, TimeUnit.SECONDS)).addLast(new HeartBeatReqHandler());
         }

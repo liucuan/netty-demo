@@ -10,7 +10,7 @@ public enum MessageType {
     /**
      * @param type
      */
-    private MessageType(byte type) {
+    MessageType(byte type) {
         this.type = type;
     }
 
@@ -24,7 +24,7 @@ public enum MessageType {
 
     public static MessageType getMessageType(byte type) {
         for (MessageType b : MessageType.values()) {
-            if (b.getType() == type) {
+            if(b.getType() == type) {
                 return b;
             }
         }

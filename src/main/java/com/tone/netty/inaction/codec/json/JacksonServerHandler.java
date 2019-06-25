@@ -1,7 +1,5 @@
-package com.tone.netty.inaction.cp2;
+package com.tone.netty.inaction.codec.json;
 
-import com.tone.netty.inaction.codec.json.JacksonBean;
-import com.tone.netty.inaction.codec.json.JacksonMapper;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -9,7 +7,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.CharsetUtil;
-import io.netty.util.ReferenceCountUtil;
 
 /**
  * ChannelHandlers被不同类型的events调用 应用程序通过实现或者扩展ChannelHandlers来钩挂到event的生命周期，并且提供定制的应用逻辑
@@ -17,17 +14,16 @@ import io.netty.util.ReferenceCountUtil;
  */
 @ChannelHandler.Sharable
 // 表明ChannelHandler可以被多个Channel安全共享
-public class EchoServerHandler extends ChannelInboundHandlerAdapter {
-    // 每个信息入站都会调用
+public class JacksonServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ByteBuf in = (ByteBuf) msg;
-        System.out.println(ctx.channel().id().asShortText());
-        System.out.println(Thread.currentThread().getName() + " Server received: " + in.toString(CharsetUtil.UTF_8));
-        ctx.write(in);// 将收到的消息写入发送，不刷新输入消息
+        if(msg instanceof JacksonBean) {
+            System.out.println("msg is JacksonBean.");
+        }
+        System.out.println(" Server received: " + JacksonMapper.getInstance().writeValueAsString(msg));
+        ctx.write(msg);// 将收到的消息写入发送，不刷新输入消息
     }
 
-    // 通知处理器最后的 channelread() 是当前批处理中的最后一条消息时调用
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
         // 刷新挂起的数据到远端然后关闭Channel
@@ -38,7 +34,6 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
     // 默认情况下，一个handler会传递某个handler方法的调用到下一个handler。
     // 所以，如果在这个传递链中exceptionCaught()没有实现，异常会一直走到ChannelPipeline的终点，
     // 然后被载入日志。因为这个原因，你的应用应该提供至少一个实现了exceptionCaught()的handler。
-    // 读操作时捕获到异常时调用
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         cause.printStackTrace();
